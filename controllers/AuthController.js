@@ -1,3 +1,4 @@
+// AuthController.js
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -6,7 +7,7 @@ const AuthController = {
     // Registro de usuario
     register: async (req, res) => {
         try {
-            const { name, email, role } = req.body;
+            const { name, email, password, role } = req.body;
 
             // Verificar si el usuario ya existe
             const userExists = await User.findOne({ where: { email } });
@@ -19,46 +20,58 @@ const AuthController = {
 
             // Crear el nuevo usuario
             const newUser = await User.create({ name, email, password: hashedPassword, role });
-            const { password, ...userWithoutPassword } = newUser.toJSON();
-			res.status(201).json({ message: "Usuario registrado", user: userWithoutPassword });
+            res.status(201).json({ message: "Usuario registrado exitosamente" });
         } catch (error) {
-            res.status(500).json({ message: "Error en el registro", error });
+            console.error("Error en el registro:", error);
+            res.status(500).json({ message: "Error en el registro", error: error.message });
         }
     },
 
     // Inicio de sesión
-login: async (req, res) => {
-    try {
-        const { email, password } = req.body;
+    login: async (req, res) => {
+        try {
+            const { email, password } = req.body;
 
-        // Verificar si el usuario existe
-        const user = await User.findOne({ where: { email } });
-        if (!user) {
-            console.log("Usuario no encontrado");
-            return res.status(404).json({ message: "Usuario no encontrado" });
+            // Verificar si el usuario existe
+            const user = await User.findOne({ where: { email } });
+            if (!user) {
+                return res.status(404).json({ message: "Usuario no encontrado" });
+            }
+
+            // Comparar la contraseña
+            const isMatch = await bcrypt.compare(password, user.password);
+            if (!isMatch) {
+                return res.status(401).json({ message: "Contraseña incorrecta" });
+            }
+
+            // Generar un token JWT
+            const token = jwt.sign(
+                { id: user.id, role: user.role },
+                process.env.JWT_SECRET,
+                { expiresIn: '1h' }
+            );
+
+            // Enviar el token como cookie segura
+            res.cookie('token', token, {
+                httpOnly: true,
+                secure: true,
+                sameSite: 'Strict',
+                maxAge: 3600000
+            });
+
+            // Enviar el rol del usuario en la respuesta JSON
+            res.status(200).json({ message: "Inicio de sesión exitoso", role: user.role });
+        } catch (error) {
+            console.error("Error en el inicio de sesión:", error);
+            res.status(500).json({ message: "Error en el inicio de sesión", error: error.message });
         }
+    },
 
-        // Comparar la contraseña
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            console.log("Contraseña incorrecta");
-            return res.status(401).json({ message: "Contraseña incorrecta" });
-        }
-
-        // Generar un token JWT
-        const token = jwt.sign(
-            { id: user.id, role: user.role },
-            process.env.JWT_SECRET,
-            { expiresIn: '1h' }
-        );
-
-        res.status(200).json({ message: "Inicio de sesión exitoso", token });
-    } catch (error) {
-        console.error("Error en el inicio de sesión:", error); // Mostrar el error en la consola del servidor
-        res.status(500).json({ message: "Error en el inicio de sesión", error: error.message }); // Mostrar el mensaje de error en la respuesta
+    // Cierre de sesión
+    logout: (req, res) => {
+        res.clearCookie('token');
+        res.status(200).json({ message: "Cierre de sesión exitoso" });
     }
-}
-
 };
 
 module.exports = AuthController;

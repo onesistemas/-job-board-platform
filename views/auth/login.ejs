@@ -18,7 +18,7 @@
                 </div>
                 <div class="form-group">
                     <label for="password">Contraseña:</label>
-                    <input type="password" class="form-control" id="password" v-model="password" required>
+                    <input type="password" class="form-control" id="password" required v-model="password">
                 </div>
                 <button type="submit" class="btn btn-primary btn-block">Iniciar Sesión</button>
             </form>
@@ -48,14 +48,34 @@
 
                         if (response.ok) {
                             const data = await response.json();
-                            localStorage.setItem('token', data.token);
-                            window.location.href = '/admin/dashboard'; // Cambia la ruta según el rol
+                            console.log("Inicio de sesión exitoso");
+
+                            // Redirigir según el rol del usuario
+                            switch (data.role) {
+                                case 'admin':
+                                    window.location.href = '/admin/dashboard';
+                                    break;
+                                case 'profesor':
+                                    window.location.href = '/profesor/dashboard';
+                                    break;
+                                case 'alumno':
+                                    window.location.href = '/alumno/dashboard';
+                                    break;
+                                case 'empresa':
+                                    window.location.href = '/empresa/dashboard';
+                                    break;
+                                default:
+                                    this.errorMessage = 'Rol no reconocido';
+                                    console.error("Rol no reconocido:", data.role);
+                            }
                         } else {
                             const data = await response.json();
                             this.errorMessage = data.message || 'Error en el inicio de sesión';
+                            console.error("Error en el inicio de sesión:", this.errorMessage);
                         }
                     } catch (error) {
                         this.errorMessage = 'Error al conectar con el servidor';
+                        console.error("Error en la conexión:", error);
                     }
                 }
             }
