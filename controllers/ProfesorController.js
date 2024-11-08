@@ -1,11 +1,25 @@
+const User = require('../models/User'); // Importa el modelo User
+const Anuncio = require('../models/Anuncio'); // Importa el modelo Anuncio (deberemos crearlo después)
+
 const ProfesorController = {
-    crearAlumno: (req, res) => {
-        // Lógica para crear un alumno
-        res.send("Alumno creado por el profesor");
+    crearAlumno: async (req, res) => {
+        try {
+            const { name, email, password, carrera, curso, anioEgreso } = req.body;
+            const nuevoAlumno = await User.create({ 
+                name, email, password, role: 'alumno', carrera, curso, anioEgreso 
+            });
+            res.status(201).json({ message: "Alumno creado", alumno: nuevoAlumno });
+        } catch (error) {
+            res.status(500).json({ message: "Error al crear alumno", error });
+        }
     },
-    verAnuncios: (req, res) => {
-        // Lógica para ver anuncios vigentes
-        res.send("Anuncios visibles para el profesor");
+    verAnuncios: async (req, res) => {
+        try {
+            const anuncios = await Anuncio.findAll({ where: { vigente: true } });
+            res.status(200).json(anuncios);
+        } catch (error) {
+            res.status(500).json({ message: "Error al obtener anuncios", error });
+        }
     }
 };
 
