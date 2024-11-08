@@ -1,4 +1,6 @@
+require('dotenv').config();
 const express = require('express');
+const path = require('path'); // Para manejar las rutas de archivos
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -7,6 +9,8 @@ const adminRoutes = require('./routes/adminRoutes');
 const profesorRoutes = require('./routes/profesorRoutes');
 const alumnoRoutes = require('./routes/alumnoRoutes');
 const empresaRoutes = require('./routes/empresaRoutes');
+const authRoutes = require('./routes/authRoutes');
+
 
 // Middleware
 app.use(express.static('public'));
@@ -18,6 +22,11 @@ app.use('/admin', adminRoutes);
 app.use('/profesor', profesorRoutes);
 app.use('/alumno', alumnoRoutes);
 app.use('/empresa', empresaRoutes);
+app.use('/auth', authRoutes);
+
+// Configurar EJS como motor de vistas
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
 
 // Ruta básica de prueba
 app.get('/', (req, res) => {

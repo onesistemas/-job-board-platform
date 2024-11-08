@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Profesor</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js"></script>
+</head>
+<body>
+    <div id="app" class="container mt-5">
+        <h1 class="text-center">Panel de Profesor</h1>
+        <button class="btn btn-danger mb-3" @click="logout">Cerrar Sesión</button>
+        <div>
+            <h3>Alumnos</h3>
+            <ul class="list-group">
+                <li class="list-group-item" v-for="alumno in alumnos" :key="alumno.id">
+                    {{ alumno.name }} - {{ alumno.carrera }}
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    alumnos: []
+                };
+            },
+            created() {
+                this.fetchAlumnos();
+            },
+            methods: {
+                async fetchAlumnos() {
+                    try {
+                        const response = await fetch('/profesor/alumnos', {
+                            headers: {
+                                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                            }
+                        });
+                        if (response.ok) {
+                            this.alumnos = await response.json();
+                        } else {
+                            alert("No tienes autorización");
+                        }
+                    } catch (error) {
+                        console.error("Error al obtener alumnos:", error);
+                    }
+                },
+                logout() {
+                    localStorage.removeItem('token');
+                    window.location.href = '/auth/login';
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

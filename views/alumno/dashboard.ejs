@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Alumno</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js"></script>
+</head>
+<body>
+    <div id="app" class="container mt-5">
+        <h1 class="text-center">Panel de Alumno</h1>
+        <button class="btn btn-danger mb-3" @click="logout">Cerrar Sesión</button>
+
+        <div v-if="anuncios.length">
+            <h3>Anuncios Disponibles</h3>
+            <ul class="list-group mb-3">
+                <li class="list-group-item" v-for="anuncio in anuncios" :key="anuncio.id">
+                    <strong>{{ anuncio.titulo }}</strong>
+                    <p>{{ anuncio.descripcion }}</p>
+                    <button class="btn btn-primary btn-sm" @click="aplicarAnuncio(anuncio.id)">Aplicar</button>
+                </li>
+            </ul>
+        </div>
+        <p v-else>No hay anuncios disponibles.</p>
+
+        <h3>Actualizar Perfil</h3>
+        <form @submit.prevent="actualizarPerfil">
+            <div class="form-group">
+                <label for="name">Nombre:</label>
+                <input type="text" id="name" class="form-control" v-model="perfil.name">
+            </div>
+            <div class="form-group">
+                <label for="carrera">Carrera:</label>
+                <input type="text" id="carrera" class="form-control" v-model="perfil.carrera">
+            </div>
+            <div class="form-group">
+                <label for="curso">Curso:</label>
+                <input type="text" id="curso" class="form-control" v-model="perfil.curso">
+            </div>
+            <button type="submit" class="btn btn-success">Actualizar Perfil</button>
+        </form>
+        <p v-if="mensaje" class="text-success mt-3">{{ mensaje }}</p>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    anuncios: [],
+                    perfil: { name: '', carrera: '', curso: '' },
+                    mensaje: ''
+                };
+            },
+            created() {
+                this.fetchAnuncios();
+                this.fetchPerfil();
+            },
+            methods: {
+                async fetchAnuncios() {
+                    try {
+                        const response = await fetch('/alumno/anuncios', {
+                            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                        });
+                        if (response.ok) {
+                            this.anuncios = await response.json();
+                        }
+                    } catch (error) {
+                        console.error("Error al obtener anuncios:", error);
+                    }
+                },
+                async fetchPerfil() {
+                    try {
+                        const response = await fetch('/alumno/perfil', {
+                            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                        });
+                        if (response.ok) {
+                            this.perfil = await response.json();
+                        }
+                    } catch (error) {
+                        console.error("Error al obtener perfil:", error);
+                    }
+                },
+                async aplicarAnuncio(anuncioId) {
+                    try {
+                        const response = await fetch(`/alumno/aplicar/${anuncioId}`, {
+                            method: 'POST',
+                            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                        });
+                        if (response.ok) {
+                            alert("Aplicación enviada con éxito");
+                        } else {
+                            alert("Error al aplicar");
+                        }
+                    } catch (error) {
+                        console.error("Error al aplicar:", error);
+                    }
+                },
+                async actualizarPerfil() {
+                    try {
+                        const response = await fetch('/alumno/actualizar-perfil', {
+                            method: 'PUT',
+                            headers: {
+                                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(this.perfil)
+                        });
+                        if (response.ok) {
+                            this.mensaje = "Perfil actualizado correctamente";
+                        } else {
+                            this.mensaje = "Error al actualizar el perfil";
+                        }
+                    } catch (error) {
+                        console.error("Error al actualizar perfil:", error);
+                    }
+                },
+                logout() {
+                    localStorage.removeItem('token');
+                    window.location.href = '/auth/login';
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

@@ -1,5 +1,5 @@
 const User = require('../models/User'); // Importa el modelo User
-const Anuncio = require('../models/Anuncio'); // Importa el modelo Anuncio (deberemos crearlo después)
+const Anuncio = require('../models/Anuncio'); // Importa el modelo Anuncio
 
 const ProfesorController = {
     crearAlumno: async (req, res) => {

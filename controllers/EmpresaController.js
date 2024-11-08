@@ -1,5 +1,5 @@
 const Anuncio = require('../models/Anuncio'); // Importa el modelo Anuncio
-const User = require('../models/User');
+const User = require('../models/User'); // Importa el modelo User
 
 const EmpresaController = {
     crearAnuncio: async (req, res) => {

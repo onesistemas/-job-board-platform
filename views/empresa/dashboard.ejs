@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Empresa</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js"></script>
+</head>
+<body>
+    <div id="app" class="container mt-5">
+        <h1 class="text-center">Panel de Empresa</h1>
+        <button class="btn btn-danger mb-3" @click="logout">Cerrar Sesión</button>
+
+        <h3>Crear Nuevo Anuncio</h3>
+        <form @submit.prevent="crearAnuncio">
+            <div class="form-group">
+                <label for="titulo">Título:</label>
+                <input type="text" id="titulo" class="form-control" v-model="nuevoAnuncio.titulo">
+            </div>
+            <div class="form-group">
+                <label for="descripcion">Descripción:</label>
+                <textarea id="descripcion" class="form-control" v-model="nuevoAnuncio.descripcion"></textarea>
+            </div>
+            <button type="submit" class="btn btn-success">Crear Anuncio</button>
+        </form>
+
+        <h3 class="mt-4">Alumnos Disponibles</h3>
+        <ul class="list-group">
+            <li class="list-group-item" v-for="alumno in alumnos" :key="alumno.id">
+                {{ alumno.name }} - {{ alumno.carrera }}
+                <button class="btn btn-secondary btn-sm float-right" @click="marcarFavorito(alumno.id)">Favorito</button>
+            </li>
+        </ul>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    alumnos: [],
+                    nuevoAnuncio: { titulo: '', descripcion: '' },
+                };
+            },
+            created() {
+                this.fetchAlumnos();
+            },
+            methods: {
+                async fetchAlumnos() {
+                    try {
+                        const response = await fetch('/empresa/ver-alumnos', {
+                            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                        });
+                        if (response.ok) {
+                            this.alumnos = await response.json();
+                        }
+                    } catch (error) {
+                        console.error("Error al obtener alumnos:", error);
+                    }
+                },
+                async crearAnuncio() {
+                    try {
+                        const response = await fetch('/empresa/crear-anuncio', {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(this.nuevoAnuncio)
+                        });
+                        if (response.ok) {
+                            alert("Anuncio creado correctamente");
+                            this.nuevoAnuncio = { titulo: '', descripcion: '' };
+                        } else {
+                            alert("Error al crear anuncio");
+                        }
+                    } catch (error) {
+                        console.error("Error al crear anuncio:", error);
+                    }
+                },
+                async marcarFavorito(alumnoId) {
+                    try {
+                        const response = await fetch(`/empresa/marcar-favorito/${alumnoId}`, {
+                            method: 'POST',
+                            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                        });
+                        if (response.ok) {
+                            alert("Alumno marcado como favorito");
+                        } else {
+                            alert("Error al marcar favorito");
+                        }
+                    } catch (error) {
+                        console.error("Error al marcar favorito:", error);
+                    }
+                },
+                logout() {
+                    localStorage.removeItem('token');
+                    window.location.href = '/auth/login';
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

@@ -1,5 +1,5 @@
 const User = require('../models/User'); // Importa el modelo User
-const Aplicacion = require('../models/Aplicacion'); // Modelo Aplicacion (para crear después)
+const Aplicacion = require('../models/Aplicacion'); // Importa el modelo Aplicacion
 
 const AlumnoController = {
     actualizarPerfil: async (req, res) => {
