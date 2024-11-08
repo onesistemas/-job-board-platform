@@ -1,1 +1,1 @@
-# -job-board-platform
+# job-board-platform
