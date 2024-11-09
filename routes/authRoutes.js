@@ -2,14 +2,12 @@ const express = require('express');
 const router = express.Router();
 const AuthController = require('../controllers/AuthController');
 
-// Ruta para registro de usuarios
-router.post('/register', AuthController.register);
-
-// Ruta para inicio de sesión
-router.post('/login', AuthController.login);
-
+// Ruta para renderizar la página de inicio de sesión
 router.get('/login', (req, res) => {
-    res.render('auth/login');
+    res.render('auth/login'); // Asegúrate de que la vista esté en `views/auth/login.ejs`
 });
+
+// Ruta para el inicio de sesión POST
+router.post('/login', AuthController.login);
 
 module.exports = router;

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Alumnos</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+	   <style>
+        body {
+            background-color: #f5f8fb;
+            font-family: Arial, sans-serif;
+        }
+        .navbar {
+            background-color: #003366;
+        }
+        .navbar-brand, .navbar-nav .nav-link, .navbar-text {
+            color: #ffffff !important;
+        }
+        .container-title {
+            margin-top: 20px;
+            text-align: center;
+            color: #003366;
+        }
+        .card {
+            margin-top: 30px;
+            padding: 20px;
+            border: none;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .card i {
+            font-size: 3rem;
+            color: #003366;
+            margin-bottom: 10px;
+        }
+        .card h5 {
+            color: #003366;
+        }
+        .alert-primary {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+<body>
+<!-- Barra de Navegación -->
+<nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">Logo</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="dashboard"><i class="fas fa-home"></i> Inicio</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="configuracionInstitucion"><i class="fas fa-cogs"></i> Configuración de la Institución</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="estadisticas"><i class="fas fa-chart-line"></i> Estadísticas</a>
+                </li>
+            </ul>
+            <span class="navbar-text">
+                <!-- Icono de persona -->
+                <i class="fas fa-user-circle" style="font-size: 1.5em;"></i> Admin
+            </span>
+            <button class="btn btn-outline-light ms-3" @click="logout">Cerrar sesión</button>
+        </div>
+    </div>
+</nav>
+
+    <div id="app" class="container mt-5">
+        <h2 class="text-center mb-4"><i class="fas fa-user-graduate"></i> Gestión de Alumnos</h2>
+        <button class="btn btn-success mb-3" @click="abrirModalNuevoAlumno"><i class="fas fa-plus"></i> Nuevo Alumno</button>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Email</th>
+                    <th>Curso</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="alumno in alumnos" :key="alumno.id">
+                    <td>{{ alumno.nombre }}</td>
+                    <td>{{ alumno.email }}</td>
+                    <td>{{ alumno.curso }}</td>
+                    <td>
+                        <button class="btn btn-info btn-sm" @click="verAlumno(alumno.id)"><i class="fas fa-eye"></i> Ver</button>
+                        <button class="btn btn-warning btn-sm" @click="editarAlumno(alumno.id)"><i class="fas fa-edit"></i> Editar</button>
+                        <button class="btn btn-danger btn-sm" @click="eliminarAlumno(alumno.id)"><i class="fas fa-trash"></i> Eliminar</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js"></script>
+    <script>
+        const { createApp } = Vue;
+        createApp({
+            data() {
+                return {
+                    alumnos: []
+                };
+            },
+            async created() {
+                await this.fetchAlumnos();
+            },
+            methods: {
+                async fetchAlumnos() {
+                    const response = await fetch('/admin/alumnos');
+                    if (response.ok) this.alumnos = await response.json();
+                },
+                async eliminarAlumno(id) {
+                    if (confirm("¿Estás seguro de que deseas eliminar este alumno?")) {
+                        const response = await fetch(`/admin/alumnos/${id}`, { method: 'DELETE' });
+                        if (response.ok) this.alumnos = this.alumnos.filter(alumno => alumno.id !== id);
+                    }
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

@@ -18,7 +18,7 @@
                 </div>
                 <div class="form-group">
                     <label for="password">Contraseña:</label>
-                    <input type="password" class="form-control" id="password" required v-model="password">
+                    <input type="password" class="form-control" id="password" v-model="password" required>
                 </div>
                 <button type="submit" class="btn btn-primary btn-block">Iniciar Sesión</button>
             </form>
@@ -48,7 +48,7 @@
 
                         if (response.ok) {
                             const data = await response.json();
-                            console.log("Inicio de sesión exitoso");
+                            document.cookie = `token=${data.token}; path=/`;
 
                             // Redirigir según el rol del usuario
                             switch (data.role) {
@@ -66,16 +66,13 @@
                                     break;
                                 default:
                                     this.errorMessage = 'Rol no reconocido';
-                                    console.error("Rol no reconocido:", data.role);
                             }
                         } else {
                             const data = await response.json();
                             this.errorMessage = data.message || 'Error en el inicio de sesión';
-                            console.error("Error en el inicio de sesión:", this.errorMessage);
                         }
                     } catch (error) {
                         this.errorMessage = 'Error al conectar con el servidor';
-                        console.error("Error en la conexión:", error);
                     }
                 }
             }

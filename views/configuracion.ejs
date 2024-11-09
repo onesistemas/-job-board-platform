@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuración Inicial</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f5f8fb;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            max-width: 600px;
+            margin-top: 50px;
+        }
+        .card {
+            border: none;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .card-header {
+            background-color: #003366;
+            color: #ffffff;
+            font-weight: bold;
+            text-align: center;
+        }
+        .text-success {
+            color: green;
+        }
+        .text-danger {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="container">
+        <div class="card">
+            <div class="card-header">
+                <h2>Configuración Inicial</h2>
+                <p>Configure la aplicación y cree un usuario administrador.</p>
+            </div>
+            <div class="card-body">
+                <form @submit.prevent="crearAdmin">
+                    <h4>Información del Administrador</h4>
+                    <div class="mb-3">
+                        <label for="nombreAdmin" class="form-label">Nombre</label>
+                        <input type="text" class="form-control" id="nombreAdmin" v-model="admin.nombre" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="emailAdmin" class="form-label">Correo Electrónico</label>
+                        <input type="email" class="form-control" id="emailAdmin" v-model="admin.email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="passwordAdmin" class="form-label">Contraseña</label>
+                        <input type="password" class="form-control" id="passwordAdmin" v-model="admin.password" @input="validarPassword" required>
+                        <p :class="{'text-danger': !passwordValido, 'text-success': passwordValido}">{{ mensajePassword }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirmPasswordAdmin" class="form-label">Confirmar Contraseña</label>
+                        <input type="password" class="form-control" id="confirmPasswordAdmin" v-model="admin.confirmPassword" @input="validarConfirmacion" required>
+                        <p :class="{'text-danger': !confirmacionValida, 'text-success': confirmacionValida}">{{ mensajeConfirmacion }}</p>
+                    </div>
+
+                    <h4 class="mt-4">Información de la Institución</h4>
+                    <div class="mb-3">
+                        <label for="nombreInstitucion" class="form-label">Nombre de la Institución</label>
+                        <input type="text" class="form-control" id="nombreInstitucion" v-model="institucion.nombre" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="tipoInstitucion" class="form-label">Tipo de Institución</label>
+                        <select class="form-select" v-model="institucion.tipo" required>
+                            <option disabled value="">Seleccione el tipo</option>
+                            <option>Secundaria</option>
+                            <option>Secundaria Tecnica</option>
+                            <option>Secundaria Comercial</option>
+                            <option>Terciario</option>
+                            <option>Universidad</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="publicoInstitucion" class="form-label">Público</label>
+                        <select class="form-select" v-model="institucion.publico" required>
+                            <option disabled value="">Seleccione el tipo</option>
+                            <option>Publico</option>
+                            <option>Mixto</option>
+                            <option>Privado</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="direccionInstitucion" class="form-label">Dirección</label>
+                        <input type="text" class="form-control" id="direccionInstitucion" v-model="institucion.direccion">
+                    </div>
+                    <div class="mb-3">
+                        <label for="oficinaInstitucion" class="form-label">Oficina (opcional)</label>
+                        <input type="text" class="form-control" id="oficinaInstitucion" v-model="institucion.oficina">
+                    </div>
+                    <div class="mb-3">
+                        <label for="emailInstitucion" class="form-label">Correo de la Institución</label>
+                        <input type="email" class="form-control" id="emailInstitucion" v-model="institucion.email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="codigoPostal" class="form-label">Código Postal</label>
+                        <input type="text" class="form-control" id="codigoPostal" v-model="institucion.codigo_postal">
+                    </div>
+                    <div class="mb-3">
+                        <label for="paisInstitucion" class="form-label">País</label>
+                        <select class="form-select" v-model="institucion.pais" required>
+                            <!-- Opciones de países -->
+                            <option>Argentina</option>
+                            <option>Chile</option>
+                            <option>Uruguay</option>
+                            <!-- Agrega más países según sea necesario -->
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="idiomaInstitucion" class="form-label">Idioma</label>
+                        <select class="form-select" v-model="institucion.idioma" required>
+                            <option disabled value="">Seleccione el idioma</option>
+                            <option>Español</option>
+                            <option>Ingles</option>
+                            <option>Frances</option>
+                            <option>Portugues</option>
+                        </select>
+                    </div>
+
+                    <button :disabled="!formularioValido" type="submit" class="btn btn-primary w-100 mt-4">Guardar Configuración</button>
+                </form>
+                <p v-if="mensaje" class="text-success mt-3">{{ mensaje }}</p>
+                <p v-if="errorMessage" class="text-danger mt-3">{{ errorMessage }}</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js"></script>
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    admin: { nombre: '', email: '', password: '', confirmPassword: '' },
+                    institucion: { nombre: '', tipo: '', publico: '', direccion: '', oficina: '', email: '', codigo_postal: '', telefono: '', ciudad: '', pais: '', idioma: '' },
+                    mensaje: '',
+                    errorMessage: '',
+                    passwordValido: false,
+                    confirmacionValida: false,
+                    mensajePassword: 'Debe contener al menos 8 caracteres y un número.',
+                    mensajeConfirmacion: 'Las contraseñas no coinciden.'
+                };
+            },
+            computed: {
+                formularioValido() {
+                    return this.passwordValido && this.confirmacionValida;
+                }
+            },
+            methods: {
+                validarPassword() {
+                    const regex = /^(?=.*\d).{8,}$/;
+                    this.passwordValido = regex.test(this.admin.password);
+                    this.mensajePassword = this.passwordValido ? 'Contraseña válida.' : 'Debe contener al menos 8 caracteres y un número.';
+                },
+                validarConfirmacion() {
+                    this.confirmacionValida = this.admin.password === this.admin.confirmPassword;
+                    this.mensajeConfirmacion = this.confirmacionValida ? 'Las contraseñas coinciden.' : 'Las contraseñas no coinciden.';
+                },
+                async crearAdmin() {
+                    try {
+                        const response = await fetch('/configuracion/crear-admin', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                nombre: this.admin.nombre,
+                                email: this.admin.email,
+                                password: this.admin.password,
+                                institucionData: this.institucion
+                            })
+                        });
+
+                        if (response.ok) {
+                            this.mensaje = "Administrador e institución creados correctamente.";
+                            setTimeout(() => window.location.href = '/auth/login', 2000);
+                        } else {
+                            const data = await response.json();
+                            this.errorMessage = data.message || "Error en la configuración inicial";
+                        }
+                    } catch (error) {
+                        this.errorMessage = "Error al conectar con el servidor";
+                        console.error(error);
+                    }
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

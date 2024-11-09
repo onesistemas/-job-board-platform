@@ -29,6 +29,7 @@ const AuthController = {
 
     // Inicio de sesión
     login: async (req, res) => {
+		console.log("Datos recibidos en el body:", req.body); // Verifica si los datos están en el body
         try {
             const { email, password } = req.body;
 
