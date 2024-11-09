@@ -3,10 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Estadísticas</title>
+    <title>Estadísticas de la Plataforma</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-	    <style>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
         body {
             background-color: #f5f8fb;
             font-family: Arial, sans-serif;
@@ -29,89 +31,173 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             text-align: center;
         }
-        .card i {
+        .icon-large {
             font-size: 3rem;
             color: #003366;
-            margin-bottom: 10px;
         }
-        .card h5 {
-            color: #003366;
-        }
-        .alert-primary {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+        .stats-number {
+            font-size: 2rem;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
-<!-- Barra de Navegación -->
-<nav class="navbar navbar-expand-lg navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="#">Logo</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav me-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="dashboard"><i class="fas fa-home"></i> Inicio</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="configuracionInstitucion"><i class="fas fa-cogs"></i> Configuración de la Institución</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="estadisticas"><i class="fas fa-chart-line"></i> Estadísticas</a>
-                </li>
-            </ul>
-            <span class="navbar-text">
-                <!-- Icono de persona -->
-                <i class="fas fa-user-circle" style="font-size: 1.5em;"></i> Admin
-            </span>
-            <button class="btn btn-outline-light ms-3" @click="logout">Cerrar sesión</button>
+    <!-- Barra de Navegación -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Logo</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="dashboard"><i class="fas fa-home"></i> Inicio</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="configuracionInstitucion"><i class="fas fa-cogs"></i> Configuración de la Institución</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="estadisticas"><i class="fas fa-chart-line"></i> Estadísticas</a>
+                    </li>
+                </ul>
+                <span class="navbar-text">
+                    <i class="fas fa-user-circle" style="font-size: 1.5em;"></i> Admin
+                </span>
+                <button class="btn btn-outline-light ms-3" @click="logout">Cerrar sesión</button>
+            </div>
         </div>
-    </div>
-</nav>
+    </nav>
 
     <div id="app" class="container mt-5">
         <h2 class="text-center mb-4"><i class="fas fa-chart-line"></i> Estadísticas de la Plataforma</h2>
+        
         <div class="row">
-            <div class="col-md-6">
-                <div class="card p-4 shadow-sm">
+            <!-- Usuarios Registrados -->
+            <div class="col-md-3">
+                <div class="card">
+                    <i class="fas fa-users icon-large"></i>
                     <h5>Usuarios Registrados</h5>
-                    <p>Total de usuarios: {{ totalUsuarios }}</p>
+                    <p class="stats-number">{{ totalUsuarios }}</p>
+                    <p><strong>Activos hoy:</strong> {{ usuariosActivosHoy }}</p>
+                    <p><strong>Últimos 30 días:</strong> {{ usuariosActivosUltimos30 }}</p>
                 </div>
             </div>
-            <div class="col-md-6">
-                <div class="card p-4 shadow-sm">
-                    <h5>Anuncios Activos</h5>
-                    <p>Total de anuncios activos: {{ totalAnuncios }}</p>
+
+            <!-- Anuncios -->
+            <div class="col-md-3">
+                <div class="card">
+                    <i class="fas fa-bullhorn icon-large"></i>
+                    <h5>Anuncios</h5>
+                    <p class="stats-number">{{ totalAnuncios }}</p>
+                    <p><strong>Activos:</strong> {{ anunciosActivos }}</p>
+                    <p><strong>Últimos 6 meses:</strong> {{ anunciosUltimos6Meses }}</p>
                 </div>
+            </div>
+
+            <!-- Aplicaciones -->
+            <div class="col-md-3">
+                <div class="card">
+                    <i class="fas fa-file-alt icon-large"></i>
+                    <h5>Aplicaciones</h5>
+                    <p class="stats-number">{{ totalAplicaciones }}</p>
+                    <p><strong>Últimos 6 meses:</strong> {{ aplicacionesUltimos6Meses }}</p>
+                    <p><strong>Últimos 30 días:</strong> {{ aplicacionesUltimos30Dias }}</p>
+                </div>
+            </div>
+
+            <!-- Empresas Registradas -->
+            <div class="col-md-3">
+                <div class="card">
+                    <i class="fas fa-building icon-large"></i>
+                    <h5>Empresas Registradas</h5>
+                    <p class="stats-number">{{ totalEmpresas }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráficos -->
+        <div class="row mt-5">
+            <div class="col-md-6">
+                <canvas id="usuariosChart"></canvas>
+            </div>
+            <div class="col-md-6">
+                <canvas id="aplicacionesChart"></canvas>
             </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js"></script>
     <script>
         const { createApp } = Vue;
+
         createApp({
             data() {
                 return {
                     totalUsuarios: 0,
-                    totalAnuncios: 0
+                    usuariosActivosHoy: 0,
+                    usuariosActivosUltimos30: 0,
+                    totalAnuncios: 0,
+                    anunciosActivos: 0,
+                    anunciosUltimos6Meses: 0,
+                    totalAplicaciones: 0,
+                    aplicacionesUltimos6Meses: 0,
+                    aplicacionesUltimos30Dias: 0,
+                    totalEmpresas: 0
                 };
             },
             async created() {
                 await this.fetchEstadisticas();
+                this.renderUsuariosChart();
+                this.renderAplicacionesChart();
             },
             methods: {
                 async fetchEstadisticas() {
-                    const response = await fetch('/admin/estadisticas');
+                    const response = await fetch('/admin/api/estadisticas');
                     if (response.ok) {
                         const data = await response.json();
                         this.totalUsuarios = data.totalUsuarios;
+                        this.usuariosActivosHoy = data.usuariosActivosHoy;
+                        this.usuariosActivosUltimos30 = data.usuariosActivosUltimos30;
                         this.totalAnuncios = data.totalAnuncios;
+                        this.anunciosActivos = data.anunciosActivos;
+                        this.anunciosUltimos6Meses = data.anunciosUltimos6Meses;
+                        this.totalAplicaciones = data.totalAplicaciones;
+                        this.aplicacionesUltimos6Meses = data.aplicacionesUltimos6Meses;
+                        this.aplicacionesUltimos30Dias = data.aplicacionesUltimos30Dias;
+                        this.totalEmpresas = data.totalEmpresas;
                     }
+                },
+                renderUsuariosChart() {
+                    const ctx = document.getElementById('usuariosChart').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio'],
+                            datasets: [{
+                                label: 'Usuarios Nuevos por Mes',
+                                data: [30, 50, 40, 60, 70, 90],
+                                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                                borderColor: 'rgba(54, 162, 235, 1)',
+                                borderWidth: 1
+                            }]
+                        }
+                    });
+                },
+                renderAplicacionesChart() {
+                    const ctx = document.getElementById('aplicacionesChart').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['Últimos 6 Meses', 'Últimos 30 Días'],
+                            datasets: [{
+                                label: 'Aplicaciones',
+                                data: [this.aplicacionesUltimos6Meses, this.aplicacionesUltimos30Dias],
+                                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                borderColor: 'rgba(75, 192, 192, 1)',
+                                borderWidth: 1
+                            }]
+                        }
+                    });
                 }
             }
         }).mount('#app');
