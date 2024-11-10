@@ -6,7 +6,7 @@
     <title>Gestión de Empresas</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-	    <style>
+    <style>
         body {
             background-color: #f5f8fb;
             font-family: Arial, sans-serif;
@@ -17,30 +17,8 @@
         .navbar-brand, .navbar-nav .nav-link, .navbar-text {
             color: #ffffff !important;
         }
-        .container-title {
+        .alert-success, .alert-danger {
             margin-top: 20px;
-            text-align: center;
-            color: #003366;
-        }
-        .card {
-            margin-top: 30px;
-            padding: 20px;
-            border: none;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
-        .card i {
-            font-size: 3rem;
-            color: #003366;
-            margin-bottom: 10px;
-        }
-        .card h5 {
-            color: #003366;
-        }
-        .alert-primary {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
         }
     </style>
 </head>
@@ -65,7 +43,6 @@
                 </li>
             </ul>
             <span class="navbar-text">
-                <!-- Icono de persona -->
                 <i class="fas fa-user-circle" style="font-size: 1.5em;"></i> Admin
             </span>
             <button class="btn btn-outline-light ms-3" @click="logout">Cerrar sesión</button>
@@ -73,58 +50,198 @@
     </div>
 </nav>
 
-    <div id="app" class="container mt-5">
-        <h2 class="text-center mb-4"><i class="fas fa-building"></i> Gestión de Empresas</h2>
-        <button class="btn btn-success mb-3" @click="abrirModalNuevaEmpresa"><i class="fas fa-plus"></i> Nueva Empresa</button>
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Nombre</th>
-                    <th>Ubicación</th>
-                    <th>Contacto</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr v-for="empresa in empresas" :key="empresa.id">
-                    <td>{{ empresa.nombre }}</td>
-                    <td>{{ empresa.ubicacion }}</td>
-                    <td>{{ empresa.contacto }}</td>
-                    <td>
-                        <button class="btn btn-info btn-sm" @click="verEmpresa(empresa.id)"><i class="fas fa-eye"></i> Ver</button>
-                        <button class="btn btn-warning btn-sm" @click="editarEmpresa(empresa.id)"><i class="fas fa-edit"></i> Editar</button>
-                        <button class="btn btn-danger btn-sm" @click="eliminarEmpresa(empresa.id)"><i class="fas fa-trash"></i> Eliminar</button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+<div id="app" class="container mt-5">
+    <h2 class="text-center mb-4"><i class="fas fa-building"></i> Gestión de Empresas</h2>
+
+    <!-- Mensajes de éxito y error -->
+    <div v-if="mensajeExito" class="alert alert-success" role="alert">
+        {{ mensajeExito }}
+    </div>
+    <div v-if="mensajeError" class="alert alert-danger" role="alert">
+        {{ mensajeError }}
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js"></script>
-    <script>
-        const { createApp } = Vue;
-        createApp({
-            data() {
-                return {
-                    empresas: []
-                };
+    <button class="btn btn-success mb-3" @click="abrirModalNuevaEmpresa"><i class="fas fa-plus"></i> Nueva Empresa</button>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Ubicación</th>
+                <th>Contacto</th>
+                <th>Teléfono</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr v-for="empresa in empresas" :key="empresa.id">
+                <td>{{ empresa.nombre }}</td>
+                <td>{{ empresa.ubicacion }}</td>
+                <td>{{ empresa.contacto }}</td>
+                <td>{{ empresa.telefono }}</td>
+                <td>
+                    <button class="btn btn-info btn-sm" @click="verEmpresa(empresa)"><i class="fas fa-eye"></i> Ver</button>
+                    <button class="btn btn-warning btn-sm" @click="abrirModalEditarEmpresa(empresa)"><i class="fas fa-edit"></i> Editar</button>
+                    <button class="btn btn-danger btn-sm" @click="eliminarEmpresa(empresa.id)"><i class="fas fa-trash"></i> Eliminar</button>
+                </td>
+            </tr>
+            <tr v-if="empresas.length === 0">
+                <td colspan="5" class="text-center">No hay empresas registradas.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Modal para Crear/Editar Empresa -->
+    <div class="modal fade" id="modalEmpresa" tabindex="-1" aria-labelledby="modalEmpresaLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalEmpresaLabel">{{ esEditar ? 'Editar Empresa' : 'Nueva Empresa' }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form @submit.prevent="guardarEmpresa">
+                        <div class="mb-3">
+                            <label for="nombre" class="form-label"><i class="fas fa-building"></i> Nombre de la Empresa</label>
+                            <input type="text" class="form-control" id="nombre" v-model="empresaActual.nombre" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="ubicacion" class="form-label"><i class="fas fa-map-marker-alt"></i> Ubicación</label>
+                            <input type="text" class="form-control" id="ubicacion" v-model="empresaActual.ubicacion">
+                        </div>
+                        <div class="mb-3">
+                            <label for="contacto" class="form-label"><i class="fas fa-envelope"></i> Correo de Contacto</label>
+                            <input type="email" class="form-control" id="contacto" v-model="empresaActual.contacto" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="telefono" class="form-label"><i class="fas fa-phone"></i> Teléfono</label>
+                            <input type="text" class="form-control" id="telefono" v-model="empresaActual.telefono">
+                        </div>
+                        <div class="mb-3">
+                            <label for="web_url" class="form-label"><i class="fas fa-globe"></i> Sitio Web</label>
+                            <input type="text" class="form-control" id="web_url" v-model="empresaActual.web_url">
+                        </div>
+                        <div class="mb-3">
+                            <label for="linkedin_url" class="form-label"><i class="fab fa-linkedin"></i> Perfil de LinkedIn</label>
+                            <input type="text" class="form-control" id="linkedin_url" v-model="empresaActual.linkedin_url">
+                        </div>
+
+                        <!-- Datos de Usuario solo en creación -->
+                        <div v-if="!esEditar">
+                            <h5 class="mt-4">Datos del Usuario (Empresa)</h5>
+                            <div class="mb-3">
+                                <label for="nombreUsuario" class="form-label"><i class="fas fa-user"></i> Nombre del Usuario</label>
+                                <input type="text" class="form-control" id="nombreUsuario" v-model="usuarioEmpresa.name" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="emailUsuario" class="form-label"><i class="fas fa-envelope"></i> Email</label>
+                                <input type="email" class="form-control" id="emailUsuario" v-model="usuarioEmpresa.email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="passwordUsuario" class="form-label"><i class="fas fa-key"></i> Contraseña</label>
+                                <input type="password" class="form-control" id="passwordUsuario" v-model="usuarioEmpresa.password" required>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">{{ esEditar ? 'Actualizar' : 'Crear' }} Empresa</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para ver detalles de la Empresa -->
+    <div class="modal fade" id="modalVerEmpresa" tabindex="-1" aria-labelledby="modalVerEmpresaLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalVerEmpresaLabel">Detalles de la Empresa</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p><strong>Nombre:</strong> {{ empresaActual.nombre }}</p>
+                    <p><strong>Ubicación:</strong> {{ empresaActual.ubicacion }}</p>
+                    <p><strong>Contacto:</strong> {{ empresaActual.contacto }}</p>
+                    <p><strong>Teléfono:</strong> {{ empresaActual.telefono }}</p>
+                    <p><strong>Sitio Web:</strong> {{ empresaActual.web_url || 'No especificado' }}</p>
+                    <p><strong>LinkedIn:</strong> {{ empresaActual.linkedin_url || 'No especificado' }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+<script>
+    const { createApp } = Vue;
+    createApp({
+        data() {
+            return {
+                empresas: [],
+                empresaActual: { nombre: '', ubicacion: '', contacto: '', telefono: '', web_url: '', linkedin_url: '' },
+                usuarioEmpresa: { name: '', email: '', password: '', role: 'empresa' },
+                esEditar: false,
+                mensajeExito: '',
+                mensajeError: ''
+            };
+        },
+        async created() {
+            await this.fetchEmpresas();
+        },
+        methods: {
+            async fetchEmpresas() {
+                const response = await fetch('/admin/api/empresas');
+                if (response.ok) this.empresas = await response.json();
             },
-            async created() {
-                await this.fetchEmpresas();
+            abrirModalNuevaEmpresa() {
+                this.resetForm();
+                this.esEditar = false;
+                new bootstrap.Modal(document.getElementById('modalEmpresa')).show();
             },
-            methods: {
-                async fetchEmpresas() {
-                    const response = await fetch('/admin/empresas');
-                    if (response.ok) this.empresas = await response.json();
-                },
-                async eliminarEmpresa(id) {
-                    if (confirm("¿Estás seguro de que deseas eliminar esta empresa?")) {
-                        const response = await fetch(`/admin/empresas/${id}`, { method: 'DELETE' });
-                        if (response.ok) this.empresas = this.empresas.filter(empresa => empresa.id !== id);
+            abrirModalEditarEmpresa(empresa) {
+                this.empresaActual = { ...empresa };
+                this.esEditar = true;
+                new bootstrap.Modal(document.getElementById('modalEmpresa')).show();
+            },
+            verEmpresa(empresa) {
+                this.empresaActual = { ...empresa };
+                new bootstrap.Modal(document.getElementById('modalVerEmpresa')).show();
+            },
+            async guardarEmpresa() {
+                const url = this.esEditar ? `/admin/api/empresas/${this.empresaActual.id}` : '/admin/api/empresas';
+                const method = this.esEditar ? 'PUT' : 'POST';
+                const response = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ...this.empresaActual, usuarioEmpresa: this.usuarioEmpresa })
+                });
+                if (response.ok) {
+                    this.mensajeExito = `La empresa ${this.empresaActual.nombre} se ha ${this.esEditar ? 'actualizado' : 'creado'} correctamente.`;
+                    this.fetchEmpresas();
+                    this.cerrarModalEmpresa();
+                    setTimeout(() => this.mensajeExito = '', 3000);
+                }
+            },
+            async eliminarEmpresa(id) {
+                if (confirm("¿Estás seguro de que deseas eliminar esta empresa?")) {
+                    const response = await fetch(`/admin/api/empresas/${id}`, { method: 'DELETE' });
+                    if (response.ok) {
+                        this.empresas = this.empresas.filter(empresa => empresa.id !== id);
+                        this.mensajeError = `La empresa ha sido eliminada correctamente.`;
+                        setTimeout(() => this.mensajeError = '', 3000);
                     }
                 }
+            },
+            resetForm() {
+                this.empresaActual = { nombre: '', ubicacion: '', contacto: '', telefono: '', web_url: '', linkedin_url: '' };
+                this.usuarioEmpresa = { name: '', email: '', password: '', role: 'empresa' };
+            },
+            cerrarModalEmpresa() {
+                const modal = bootstrap.Modal.getInstance(document.getElementById('modalEmpresa'));
+                modal.hide();
             }
-        }).mount('#app');
-    </script>
+        }
+    }).mount('#app');
+</script>
 </body>
 </html>

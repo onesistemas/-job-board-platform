@@ -1,12 +1,17 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <!-- Meta etiquetas -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Estadísticas de la Plataforma</title>
+    <!-- Bootstrap CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <!-- Vue.js -->
     <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js"></script>
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
@@ -79,8 +84,8 @@
                     <i class="fas fa-users icon-large"></i>
                     <h5>Usuarios Registrados</h5>
                     <p class="stats-number">{{ totalUsuarios }}</p>
-                    <p><strong>Activos hoy:</strong> {{ usuariosActivosHoy }}</p>
-                    <p><strong>Últimos 30 días:</strong> {{ usuariosActivosUltimos30 }}</p>
+                    <p><strong>Registrados hoy:</strong> {{ usuariosRegistradosHoy }}</p>
+                    <p><strong>Últimos 30 días:</strong> {{ usuariosRegistradosUltimos30Dias }}</p>
                 </div>
             </div>
 
@@ -90,8 +95,8 @@
                     <i class="fas fa-bullhorn icon-large"></i>
                     <h5>Anuncios</h5>
                     <p class="stats-number">{{ totalAnuncios }}</p>
-                    <p><strong>Activos:</strong> {{ anunciosActivos }}</p>
-                    <p><strong>Últimos 6 meses:</strong> {{ anunciosUltimos6Meses }}</p>
+                    <p><strong>Creados hoy:</strong> {{ anunciosCreadosHoy }}</p>
+                    <p><strong>Últimos 30 días:</strong> {{ anunciosCreadosUltimos30Dias }}</p>
                 </div>
             </div>
 
@@ -101,8 +106,8 @@
                     <i class="fas fa-file-alt icon-large"></i>
                     <h5>Aplicaciones</h5>
                     <p class="stats-number">{{ totalAplicaciones }}</p>
-                    <p><strong>Últimos 6 meses:</strong> {{ aplicacionesUltimos6Meses }}</p>
-                    <p><strong>Últimos 30 días:</strong> {{ aplicacionesUltimos30Dias }}</p>
+                    <p><strong>Creadas hoy:</strong> {{ aplicacionesCreadasHoy }}</p>
+                    <p><strong>Últimos 30 días:</strong> {{ aplicacionesCreadasUltimos30Dias }}</p>
                 </div>
             </div>
 
@@ -112,6 +117,8 @@
                     <i class="fas fa-building icon-large"></i>
                     <h5>Empresas Registradas</h5>
                     <p class="stats-number">{{ totalEmpresas }}</p>
+                    <p><strong>Registradas hoy:</strong> {{ empresasRegistradasHoy }}</p>
+                    <p><strong>Últimos 30 días:</strong> {{ empresasRegistradasUltimos30Dias }}</p>
                 </div>
             </div>
         </div>
@@ -127,22 +134,37 @@
         </div>
     </div>
 
+    <!-- Scripts -->
+    <!-- Bootstrap JS (Necesario para la barra de navegación) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+    <!-- Vue.js -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <script>
         const { createApp } = Vue;
 
         createApp({
             data() {
                 return {
+                    // Estadísticas generales
                     totalUsuarios: 0,
-                    usuariosActivosHoy: 0,
-                    usuariosActivosUltimos30: 0,
+                    usuariosRegistradosHoy: 0,
+                    usuariosRegistradosUltimos30Dias: 0,
                     totalAnuncios: 0,
-                    anunciosActivos: 0,
-                    anunciosUltimos6Meses: 0,
+                    anunciosCreadosHoy: 0,
+                    anunciosCreadosUltimos30Dias: 0,
                     totalAplicaciones: 0,
-                    aplicacionesUltimos6Meses: 0,
-                    aplicacionesUltimos30Dias: 0,
-                    totalEmpresas: 0
+                    aplicacionesCreadasHoy: 0,
+                    aplicacionesCreadasUltimos30Dias: 0,
+                    totalEmpresas: 0,
+                    empresasRegistradasHoy: 0,
+                    empresasRegistradasUltimos30Dias: 0,
+                    // Datos para gráficos
+                    usuariosPorDia: [],
+                    aplicacionesPorDia: [],
+                    labelsUltimos30Dias: []
                 };
             },
             async created() {
@@ -152,19 +174,31 @@
             },
             methods: {
                 async fetchEstadisticas() {
-                    const response = await fetch('/admin/api/estadisticas');
-                    if (response.ok) {
-                        const data = await response.json();
-                        this.totalUsuarios = data.totalUsuarios;
-                        this.usuariosActivosHoy = data.usuariosActivosHoy;
-                        this.usuariosActivosUltimos30 = data.usuariosActivosUltimos30;
-                        this.totalAnuncios = data.totalAnuncios;
-                        this.anunciosActivos = data.anunciosActivos;
-                        this.anunciosUltimos6Meses = data.anunciosUltimos6Meses;
-                        this.totalAplicaciones = data.totalAplicaciones;
-                        this.aplicacionesUltimos6Meses = data.aplicacionesUltimos6Meses;
-                        this.aplicacionesUltimos30Dias = data.aplicacionesUltimos30Dias;
-                        this.totalEmpresas = data.totalEmpresas;
+                    try {
+                        const response = await fetch('/admin/api/estadisticas');
+                        if (response.ok) {
+                            const data = await response.json();
+                            // Asignación de datos
+                            this.totalUsuarios = data.totalUsuarios;
+                            this.usuariosRegistradosHoy = data.usuariosRegistradosHoy;
+                            this.usuariosRegistradosUltimos30Dias = data.usuariosRegistradosUltimos30Dias;
+                            this.totalAnuncios = data.totalAnuncios;
+                            this.anunciosCreadosHoy = data.anunciosCreadosHoy;
+                            this.anunciosCreadosUltimos30Dias = data.anunciosCreadosUltimos30Dias;
+                            this.totalAplicaciones = data.totalAplicaciones;
+                            this.aplicacionesCreadasHoy = data.aplicacionesCreadasHoy;
+                            this.aplicacionesCreadasUltimos30Dias = data.aplicacionesCreadasUltimos30Dias;
+                            this.totalEmpresas = data.totalEmpresas;
+                            this.empresasRegistradasHoy = data.empresasRegistradasHoy;
+                            this.empresasRegistradasUltimos30Dias = data.empresasRegistradasUltimos30Dias;
+                            this.usuariosPorDia = data.usuariosPorDia;
+                            this.aplicacionesPorDia = data.aplicacionesPorDia;
+                            this.labelsUltimos30Dias = data.labelsUltimos30Dias;
+                        } else {
+                            console.error('Error al obtener las estadísticas');
+                        }
+                    } catch (error) {
+                        console.error('Error en la petición:', error);
                     }
                 },
                 renderUsuariosChart() {
@@ -172,32 +206,71 @@
                     new Chart(ctx, {
                         type: 'line',
                         data: {
-                            labels: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio'],
+                            labels: this.labelsUltimos30Dias,
                             datasets: [{
-                                label: 'Usuarios Nuevos por Mes',
-                                data: [30, 50, 40, 60, 70, 90],
+                                label: 'Usuarios Registrados por Día',
+                                data: this.usuariosPorDia,
                                 backgroundColor: 'rgba(54, 162, 235, 0.2)',
                                 borderColor: 'rgba(54, 162, 235, 1)',
-                                borderWidth: 1
+                                borderWidth: 1,
+                                fill: true
                             }]
+                        },
+                        options: {
+                            scales: {
+                                x: {
+                                    title: {
+                                        display: true,
+                                        text: 'Fecha'
+                                    }
+                                },
+                                y: {
+                                    title: {
+                                        display: true,
+                                        text: 'Número de Usuarios'
+                                    },
+                                    beginAtZero: true
+                                }
+                            }
                         }
                     });
                 },
                 renderAplicacionesChart() {
                     const ctx = document.getElementById('aplicacionesChart').getContext('2d');
                     new Chart(ctx, {
-                        type: 'bar',
+                        type: 'line',
                         data: {
-                            labels: ['Últimos 6 Meses', 'Últimos 30 Días'],
+                            labels: this.labelsUltimos30Dias,
                             datasets: [{
-                                label: 'Aplicaciones',
-                                data: [this.aplicacionesUltimos6Meses, this.aplicacionesUltimos30Dias],
+                                label: 'Aplicaciones por Día',
+                                data: this.aplicacionesPorDia,
                                 backgroundColor: 'rgba(75, 192, 192, 0.2)',
                                 borderColor: 'rgba(75, 192, 192, 1)',
-                                borderWidth: 1
+                                borderWidth: 1,
+                                fill: true
                             }]
+                        },
+                        options: {
+                            scales: {
+                                x: {
+                                    title: {
+                                        display: true,
+                                        text: 'Fecha'
+                                    }
+                                },
+                                y: {
+                                    title: {
+                                        display: true,
+                                        text: 'Número de Aplicaciones'
+                                    },
+                                    beginAtZero: true
+                                }
+                            }
                         }
                     });
+                },
+                logout() {
+                    window.location.href = '/logout';
                 }
             }
         }).mount('#app');

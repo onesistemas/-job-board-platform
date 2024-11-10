@@ -37,6 +37,8 @@ router.get('/configuracionInstitucion', authMiddleware, (req, res) => {
 // Rutas API para obtener datos
 router.get('/api/anuncios', authMiddleware, AdminController.obtenerAnuncios);
 router.get('/api/empresas', authMiddleware, AdminController.obtenerEmpresas);
+router.post('/api/empresas', AdminController.crearEmpresa);
+router.put('/api/empresas/:id', AdminController.actualizarEmpresa);
 router.get('/api/alumnos', authMiddleware, AdminController.obtenerAlumnos);
 router.get('/api/institucion', authMiddleware, AdminController.obtenerInstitucion);
 router.get('/api/estadisticas', authMiddleware, AdminController.obtenerEstadisticas);

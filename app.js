@@ -75,9 +75,9 @@ app.use('/profesor', authMiddleware, profesorRoutes);
 app.use('/alumno', authMiddleware, alumnoRoutes);
 app.use('/empresa', authMiddleware, empresaRoutes);
 
-// Ruta básica de prueba
+// Ruta para la página de bienvenida
 app.get('/', (req, res) => {
-    res.send('¡Servidor funcionando!');
+    res.render('index');  // Renderiza la vista index.ejs
 });
 
 // Conectar a la base de datos y sincronizar modelos

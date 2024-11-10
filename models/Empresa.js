@@ -11,11 +11,23 @@ Empresa.init({
     },
     ubicacion: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: true // Cambiado a true si la ubicación es opcional
     },
     contacto: {
         type: DataTypes.STRING,
         allowNull: false
+    },
+    telefono: {
+        type: DataTypes.STRING,
+        allowNull: true // Opcional
+    },
+    web_url: {
+        type: DataTypes.STRING,
+        allowNull: true, // Opcional
+    },
+    linkedin_url: {
+        type: DataTypes.STRING,
+        allowNull: true, // Opcional
     }
 }, {
     sequelize,
